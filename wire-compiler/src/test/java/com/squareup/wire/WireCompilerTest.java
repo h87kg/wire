@@ -94,6 +94,24 @@ public class WireCompilerTest {
     }
   }
 
+  private void testProtoRedacted(String[] sources, String[] outputs) throws Exception {
+    int numFlags = 3;
+    String[] args = new String[numFlags + sources.length];
+    args[0] = "--proto_path=../wire-runtime/src/test/proto";
+    args[1] = "--java_out=" + testDir.getAbsolutePath();
+    args[2] = "--redacted_pattern=squareup\\.protos\\.redacted_test\\.redacted";
+    System.arraycopy(sources, 0, args, numFlags, sources.length);
+
+    WireCompiler.main(args);
+
+    List<String> filesAfter = getAllFiles(testDir);
+    assertEquals(outputs.length, filesAfter.size());
+
+    for (String output : outputs) {
+      assertFilesMatchNoOptions(testDir, output);
+    }
+  }
+
   private void testProtoNoOptions(String[] sources, String[] outputs) throws Exception {
     int numFlags = 3;
     String[] args = new String[numFlags + sources.length];
@@ -367,7 +385,7 @@ public class WireCompilerTest {
         "com/squareup/wire/protos/redacted/Redacted.java",
         "com/squareup/wire/protos/redacted/Ext_redacted_test.java",
     };
-    testProto(sources, outputs);
+    testProtoRedacted(sources, outputs);
   }
 
   @Test public void testNoRoots() throws Exception {

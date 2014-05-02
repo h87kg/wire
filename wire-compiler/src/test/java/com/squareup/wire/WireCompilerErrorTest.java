@@ -81,7 +81,7 @@ public class WireCompilerErrorTest {
 
     @SuppressWarnings("unchecked")
     WireCompiler compiler = new WireCompiler(".", Arrays.asList("test.proto"),
-        new ArrayList<String>(), ".", null, true, null, Collections.EMPTY_LIST, io);
+        new ArrayList<String>(), ".", null, true, null, Collections.EMPTY_LIST, null, io);
     try {
       compiler.compile();
     } catch (IOException e) {

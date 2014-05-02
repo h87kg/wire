@@ -18,6 +18,7 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
+import java.util.regex.Pattern;
 import javax.lang.model.element.Modifier;
 
 import static com.squareup.protoparser.MessageType.Field;
@@ -37,10 +38,12 @@ public class MessageWriter {
           "throw", "throws", "transient", "try", "void", "volatile", "while"));
   private static final String URL_CHARS = "[-!#$%&'()*+,./0-9:;=?@A-Z\\[\\]_a-z~]";
   private final WireCompiler compiler;
+  private final Pattern redactedPattern;
   private final JavaWriter writer;
 
-  public MessageWriter(WireCompiler compiler) {
+  public MessageWriter(WireCompiler compiler, Pattern redactedPattern) {
     this.compiler = compiler;
+    this.redactedPattern = redactedPattern;
     this.writer = compiler.getWriter();
   }
 
@@ -283,11 +286,13 @@ public class MessageWriter {
       }
 
       // Scan for redacted fields.
-      for (Option option : field.getOptions()) {
-        // We allow any package name to be used as long as it ends with '.redacted'.
-        if (option.getName().endsWith(".redacted") && "true".equals(option.getValue())) {
-          map.put("redacted", "true");
-          break;
+      if (redactedPattern != null) {
+        for (Option option : field.getOptions()) {
+          if (redactedPattern.matcher(option.getName()).matches()
+              && "true".equals(option.getValue())) {
+            map.put("redacted", "true");
+            break;
+          }
         }
       }
 
